@@ -5,7 +5,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # Initialize Firebase
-cred = credentials.Certificate('flight-booking-86c1e-firebase-adminsdk-hed8c-da4c587092.json')  # Đường dẫn tới tệp JSON bạn đã tải xuống
+cred = credentials.Certificate('flight-booking-86c1e-firebase-adminsdk-hed8c-a13a5125f6.json')  # Đường dẫn tới tệp JSON bạn đã tải xuống
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -60,7 +60,7 @@ def generate_flight_data():
 
             # 50% chance of being a round trip
             if random.choice([True, False]):
-                return_date = departure_date + timedelta(days=random.randint(1, 14))
+                return_date = departure_date + timedelta(days=random.randint(2, 7))
                 return_time = (datetime.now() + timedelta(hours=random.randint(0, 23), minutes=random.randint(0, 59))).strftime('%H:%M')
             else:
                 return_date = None

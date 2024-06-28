@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 
 // Load environment variables from .env file
 dotenv.config();
+console.log(process.env.GOOGLE_CREDENTIALS);
 
 // Initialize Firebase using the environment variable
 const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS);
@@ -31,12 +32,14 @@ app.get('/flights', async (req, res) => {
       facilities,
       from_location,
       number,
-      price,
+      minPrice,
+      maxPrice,
       return_date,
       return_time,
       seat_available,
       seat_max,
-      to_location
+      to_location,
+      sort
     } = req.query;
 
     let query = db.collection('FlightBooking');
@@ -49,7 +52,6 @@ app.get('/flights', async (req, res) => {
     if (departure_date) query = query.where('departure_date', '==', departure_date);
     if (from_location) query = query.where('from_location', '==', from_location);
     if (number) query = query.where('number', '==', number);
-    if (price) query = query.where('price', '==', Number(price));
     if (return_date) query = query.where('return_date', '==', return_date);
     if (return_time) query = query.where('return_time', '==', return_time);
     if (seat_available) query = query.where('seat_available', '==', Number(seat_available));
@@ -77,6 +79,10 @@ app.get('/flights', async (req, res) => {
         if (!hasAllFacilities) return;
       }
 
+      // Check price range
+      if (minPrice && flight.price < Number(minPrice)) return;
+      if (maxPrice && flight.price > Number(maxPrice)) return;
+
       // Check time ranges
       const departureTime = parseTime(flight.departure_time);
       const arrivalTime = parseTime(flight.arrival_time);
@@ -96,6 +102,17 @@ app.get('/flights', async (req, res) => {
       }
     });
 
+    // Sort results
+    if (sort) {
+      if (sort === 'price') {
+        flights.sort((a, b) => a.price - b.price);
+      } else if (sort === 'departureTime') {
+        flights.sort((a, b) => parseTime(a.departure_time) - parseTime(b.departure_time));
+      } else if (sort === 'arrivalTime') {
+        flights.sort((a, b) => parseTime(a.arrival_time) - parseTime(b.arrival_time));
+      }
+    }
+
     if (flights.length === 0) {
       return res.status(404).send('No matching documents.');
     }
@@ -109,7 +126,8 @@ app.get('/flights', async (req, res) => {
 
 function parseTime(timeStr) {
   const [hours, minutes] = timeStr.split(':').map(Number);
-  return new Date().setHours(hours, minutes, 0, 0);
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).getTime();
 }
 
 const PORT = process.env.PORT || 5050;
