@@ -32,8 +32,8 @@ app.get('/flights', async (req, res) => {
       facilities,
       from_location,
       number,
-      minPrice,
-      maxPrice,
+      min_price,
+      max_price,
       return_date,
       return_time,
       seat_available,
@@ -80,8 +80,8 @@ app.get('/flights', async (req, res) => {
       }
 
       // Check price range
-      if (minPrice && flight.price < Number(minPrice)) return;
-      if (maxPrice && flight.price > Number(maxPrice)) return;
+      if (min_price && flight.price < Number(min_price)) return;
+      if (max_price && flight.price > Number(max_price)) return;
 
       // Check time ranges
       const departureTime = parseTime(flight.departure_time);
