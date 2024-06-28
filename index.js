@@ -1,8 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const firebaseAdmin = require('firebase-admin');
+const dotenv = require('dotenv');
 
-const serviceAccount = require('./flight-booking-86c1e-firebase-adminsdk-hed8c-da4c587092.json');
+// Load environment variables from .env file
+dotenv.config();
+
+// Initialize Firebase using the environment variable
+const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS);
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccount)
 });
