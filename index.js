@@ -147,10 +147,12 @@ app.post('/updateSeats', async (req, res) => {
 
     const updatedAvailableSeats = flight.available_seats.filter(seat => !bookedSeats.includes(seat));
     const updatedBookedSeats = [...flight.booked_seats, ...bookedSeats];
+    const seat_available = flight.seat_max - updatedBookedSeats.length;
 
     await flightRef.update({
       available_seats: updatedAvailableSeats,
-      booked_seats: updatedBookedSeats
+      booked_seats: updatedBookedSeats,
+      seat_available: seat_available
     });
 
     res.status(200).send('Seats updated successfully');
