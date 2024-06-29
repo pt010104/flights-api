@@ -125,7 +125,36 @@ app.get('/flights', async (req, res) => {
     res.status(500).send('Error querying documents');
   }
 });
+app.post('/updateSeats', async (req, res) => {
+  try {
+    const { flightNumber, bookedSeats } = req.body;
 
+    if (!flightNumber || !bookedSeats || !Array.isArray(bookedSeats)) {
+      return res.status(400).send('Invalid request body');
+    }
+
+    const flightRef = db.collection('FlightBooking').doc(flightNumber);
+    const flight = await flightRef.get();
+
+    if (!flight.exists) {
+      return res.status(404).send('Flight not found');
+    }
+
+    const flightData = flight.data();
+    const updatedAvailableSeats = flightData.available_seats.filter(seat => !bookedSeats.includes(seat));
+    const updatedBookedSeats = [...flightData.booked_seats, ...bookedSeats];
+
+    await flightRef.update({
+      available_seats: updatedAvailableSeats,
+      booked_seats: updatedBookedSeats
+    });
+
+    res.status(200).send('Seats updated successfully');
+  } catch (error) {
+    console.error('Error updating seats:', error);
+    res.status(500).send('Error updating seats');
+  }
+});
 function parseTime(timeStr) {
   const [hours, minutes] = timeStr.split(':').map(Number);
   const now = new Date();
