@@ -125,6 +125,7 @@ app.get('/flights', async (req, res) => {
     res.status(500).send('Error querying documents');
   }
 });
+
 app.post('/updateSeats', async (req, res) => {
   try {
     const { flightNumber, bookedSeats } = req.body;
@@ -133,16 +134,19 @@ app.post('/updateSeats', async (req, res) => {
       return res.status(400).send('Invalid request body');
     }
 
-    const flightRef = db.collection('FlightBooking').doc(flightNumber);
-    const flight = await flightRef.get();
+    // Query to find the document with the given flight number
+    const query = db.collection('FlightBooking').where('number', '==', flightNumber);
+    const snapshot = await query.get();
 
-    if (!flight.exists) {
+    if (snapshot.empty) {
       return res.status(404).send('Flight not found');
     }
 
-    const flightData = flight.data();
-    const updatedAvailableSeats = flightData.available_seats.filter(seat => !bookedSeats.includes(seat));
-    const updatedBookedSeats = [...flightData.booked_seats, ...bookedSeats];
+    const flightRef = snapshot.docs[0].ref;
+    const flight = snapshot.docs[0].data();
+
+    const updatedAvailableSeats = flight.available_seats.filter(seat => !bookedSeats.includes(seat));
+    const updatedBookedSeats = [...flight.booked_seats, ...bookedSeats];
 
     await flightRef.update({
       available_seats: updatedAvailableSeats,
