@@ -39,7 +39,8 @@ app.get('/flights', async (req, res) => {
       seat_available,
       seat_max,
       to_location,
-      sort
+      sort_by,
+      sort_order
     } = req.query;
 
     let query = db.collection('FlightBooking');
@@ -103,13 +104,14 @@ app.get('/flights', async (req, res) => {
     });
 
     // Sort results
-    if (sort) {
-      if (sort === 'price') {
-        flights.sort((a, b) => a.price - b.price);
-      } else if (sort === 'departureTime') {
-        flights.sort((a, b) => parseTime(a.departure_time) - parseTime(b.departure_time));
-      } else if (sort === 'arrivalTime') {
-        flights.sort((a, b) => parseTime(a.arrival_time) - parseTime(b.arrival_time));
+    if (sort_by) {
+      const sortOrder = sort_order === 'desc' ? -1 : 1;
+      if (sort_by === 'price') {
+        flights.sort((a, b) => sortOrder * (a.price - b.price));
+      } else if (sort_by === 'departureTime') {
+        flights.sort((a, b) => sortOrder * (parseTime(a.departure_time) - parseTime(b.departure_time)));
+      } else if (sort_by === 'arrivalTime') {
+        flights.sort((a, b) => sortOrder * (parseTime(a.arrival_time) - parseTime(b.arrival_time)));
       }
     }
 
